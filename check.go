@@ -20,7 +20,7 @@ func Check(request CheckRequest, manager Github) (CheckResponse, error) {
 		filterStates = request.Source.States
 	}
 
-	pulls, err := manager.ListPullRequests(filterStates, request.Source.Branch)
+	pulls, err := manager.ListPullRequests(filterStates, request.Source.Branch, request.Version.CommittedDate)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get last commits: %s", err)
 	}
@@ -46,11 +46,6 @@ Loop:
 
 		// Filter pull request if the NotBaseBranch matches the one specified in source
 		if request.Source.NotBaseBranch != "" && p.PullRequestObject.BaseRefName == request.Source.NotBaseBranch {
-			continue
-		}
-
-		// Filter out commits that are too old.
-		if !p.UpdatedDate().Time.After(request.Version.CommittedDate) {
 			continue
 		}
 

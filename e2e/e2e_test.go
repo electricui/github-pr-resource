@@ -23,6 +23,9 @@ import (
 )
 
 var (
+	firstCommitID        = "23dc9f552bf989d1a4aeb65ce23351dee0ec9019"
+	firstPullRequestID   = "3"
+	firstDateTime        = time.Date(2018, time.May, 11, 7, 28, 56, 0, time.UTC)
 	targetCommitID       = "a5114f6ab89f4b736655642a11e8d15ce363d882"
 	targetPullRequestID  = "4"
 	targetDateTime       = time.Date(2018, time.May, 11, 8, 43, 48, 0, time.UTC)
@@ -49,19 +52,20 @@ func TestCheckE2E(t *testing.T) {
 			},
 			version: resource.Version{},
 			expected: resource.CheckResponse{
-				resource.Version{PR: latestPullRequestID, Commit: latestCommitID, CommittedDate: latestDateTime},
+				resource.Version{PR: latestPullRequestID, Commit: latestCommitID, CommittedDate: latestDateTime, ApprovedReviewCount: "0", State: "OPEN"},
 			},
 		},
 
 		{
-			description: "check returns the previous version when its still latest",
+			description: "check returns all open PRs if there is a previous version",
 			source: resource.Source{
 				Repository:  "itsdalmo/test-repository",
 				AccessToken: os.Getenv("GITHUB_ACCESS_TOKEN"),
 			},
 			version: resource.Version{PR: latestPullRequestID, Commit: latestCommitID, CommittedDate: latestDateTime},
 			expected: resource.CheckResponse{
-				resource.Version{PR: latestPullRequestID, Commit: latestCommitID, CommittedDate: latestDateTime},
+				resource.Version{PR: targetPullRequestID, Commit: targetCommitID, CommittedDate: targetDateTime, ApprovedReviewCount: "1", State: "OPEN"},
+				resource.Version{PR: latestPullRequestID, Commit: latestCommitID, CommittedDate: latestDateTime, ApprovedReviewCount: "0", State: "OPEN"},
 			},
 		},
 
@@ -73,7 +77,8 @@ func TestCheckE2E(t *testing.T) {
 			},
 			version: resource.Version{PR: targetPullRequestID, Commit: targetCommitID, CommittedDate: targetDateTime},
 			expected: resource.CheckResponse{
-				resource.Version{PR: latestPullRequestID, Commit: latestCommitID, CommittedDate: latestDateTime},
+				resource.Version{PR: targetPullRequestID, Commit: targetCommitID, CommittedDate: targetDateTime, ApprovedReviewCount: "1", State: "OPEN"},
+				resource.Version{PR: latestPullRequestID, Commit: latestCommitID, CommittedDate: latestDateTime, ApprovedReviewCount: "0", State: "OPEN"},
 			},
 		},
 
@@ -86,7 +91,7 @@ func TestCheckE2E(t *testing.T) {
 			},
 			version: resource.Version{},
 			expected: resource.CheckResponse{
-				resource.Version{PR: targetPullRequestID, Commit: targetCommitID, CommittedDate: targetDateTime},
+				resource.Version{PR: targetPullRequestID, Commit: targetCommitID, CommittedDate: targetDateTime, ApprovedReviewCount: "1", State: "OPEN"},
 			},
 		},
 
@@ -112,7 +117,7 @@ func TestCheckE2E(t *testing.T) {
 			},
 			version: resource.Version{},
 			expected: resource.CheckResponse{
-				resource.Version{PR: targetPullRequestID, Commit: targetCommitID, CommittedDate: targetDateTime},
+				resource.Version{PR: targetPullRequestID, Commit: targetCommitID, CommittedDate: targetDateTime, ApprovedReviewCount: "1", State: "OPEN"},
 			},
 		},
 
@@ -126,7 +131,7 @@ func TestCheckE2E(t *testing.T) {
 			},
 			version: resource.Version{},
 			expected: resource.CheckResponse{
-				resource.Version{PR: latestPullRequestID, Commit: latestCommitID, CommittedDate: latestDateTime},
+				resource.Version{PR: latestPullRequestID, Commit: latestCommitID, CommittedDate: latestDateTime, ApprovedReviewCount: "0", State: "OPEN"},
 			},
 		},
 
@@ -142,7 +147,7 @@ func TestCheckE2E(t *testing.T) {
 			},
 			version: resource.Version{},
 			expected: resource.CheckResponse{
-				resource.Version{PR: developPullRequestID, Commit: developCommitID, CommittedDate: developDateTime},
+				resource.Version{PR: developPullRequestID, Commit: developCommitID, CommittedDate: developDateTime, ApprovedReviewCount: "0", State: "OPEN"},
 			},
 		},
 
@@ -157,7 +162,7 @@ func TestCheckE2E(t *testing.T) {
 			},
 			version: resource.Version{},
 			expected: resource.CheckResponse{
-				resource.Version{PR: targetPullRequestID, Commit: targetCommitID, CommittedDate: targetDateTime},
+				resource.Version{PR: targetPullRequestID, Commit: targetCommitID, CommittedDate: targetDateTime, ApprovedReviewCount: "1", State: "OPEN"},
 			},
 		},
 
@@ -183,7 +188,7 @@ func TestCheckE2E(t *testing.T) {
 			},
 			version: resource.Version{},
 			expected: resource.CheckResponse{
-				resource.Version{PR: targetPullRequestID, Commit: targetCommitID, CommittedDate: targetDateTime},
+				resource.Version{PR: targetPullRequestID, Commit: targetCommitID, CommittedDate: targetDateTime, ApprovedReviewCount: "1", State: "OPEN"},
 			},
 		},
 	}
@@ -217,7 +222,7 @@ func TestCheckAPICostE2E(t *testing.T) {
 				AccessToken: os.Getenv("GITHUB_ACCESS_TOKEN"),
 			},
 			version:  resource.Version{},
-			expected: 2,
+			expected: 1,
 		},
 	}
 
@@ -267,8 +272,8 @@ func TestGetAndPutE2E(t *testing.T) {
 			},
 			getParameters:  resource.GetParameters{},
 			putParameters:  resource.PutParameters{},
-			versionString:  `{"pr":"4","commit":"a5114f6ab89f4b736655642a11e8d15ce363d882","committed":"0001-01-01T00:00:00Z"}`,
-			metadataString: `[{"name":"pr","value":"4"},{"name":"title","value":"Add comment from 2nd pull request."},{"name":"url","value":"https://github.com/itsdalmo/test-repository/pull/4"},{"name":"head_name","value":"my_second_pull"},{"name":"head_sha","value":"a5114f6ab89f4b736655642a11e8d15ce363d882"},{"name":"base_name","value":"master"},{"name":"base_sha","value":"93eeeedb8a16e6662062d1eca5655108977cc59a"},{"name":"message","value":"Push 2."},{"name":"author","value":"itsdalmo"},{"name":"author_email","value":"kristian@doingit.no"}]`,
+			versionString:  `{"pr":"4","commit":"a5114f6ab89f4b736655642a11e8d15ce363d882","committed":"0001-01-01T00:00:00Z","approved_review_count":"","state":""}`,
+			metadataString: `[{"name":"pr","value":"4"},{"name":"title","value":"Add comment from 2nd pull request."},{"name":"url","value":"https://github.com/itsdalmo/test-repository/pull/4"},{"name":"head_name","value":"my_second_pull"},{"name":"head_sha","value":"a5114f6ab89f4b736655642a11e8d15ce363d882"},{"name":"base_name","value":"master"},{"name":"base_sha","value":"93eeeedb8a16e6662062d1eca5655108977cc59a"},{"name":"message","value":"Push 2."},{"name":"author","value":"itsdalmo"},{"name":"author_email","value":"kristian@doingit.no"},{"name":"state","value":"OPEN"}]`,
 			metadataFiles: map[string]string{
 				"pr":        "4",
 				"url":       "https://github.com/itsdalmo/test-repository/pull/4",
@@ -280,7 +285,7 @@ func TestGetAndPutE2E(t *testing.T) {
 				"author":    "itsdalmo",
 			},
 			expectedCommitCount: 10,
-			expectedCommits:     []string{"Merge commit 'a5114f6ab89f4b736655642a11e8d15ce363d882'"},
+			expectedCommits:     []string{"Merge commit 'a5114f6ab89f4b736655642a11e8d15ce363d882' into master"},
 		},
 		{
 			description: "get works when rebasing",
@@ -299,8 +304,8 @@ func TestGetAndPutE2E(t *testing.T) {
 				IntegrationTool: "rebase",
 			},
 			putParameters:       resource.PutParameters{},
-			versionString:       `{"pr":"4","commit":"a5114f6ab89f4b736655642a11e8d15ce363d882","committed":"0001-01-01T00:00:00Z"}`,
-			metadataString:      `[{"name":"pr","value":"4"},{"name":"title","value":"Add comment from 2nd pull request."},{"name":"url","value":"https://github.com/itsdalmo/test-repository/pull/4"},{"name":"head_name","value":"my_second_pull"},{"name":"head_sha","value":"a5114f6ab89f4b736655642a11e8d15ce363d882"},{"name":"base_name","value":"master"},{"name":"base_sha","value":"93eeeedb8a16e6662062d1eca5655108977cc59a"},{"name":"message","value":"Push 2."},{"name":"author","value":"itsdalmo"},{"name":"author_email","value":"kristian@doingit.no"}]`,
+			versionString:       `{"pr":"4","commit":"a5114f6ab89f4b736655642a11e8d15ce363d882","committed":"0001-01-01T00:00:00Z","approved_review_count":"","state":""}`,
+			metadataString:      `[{"name":"pr","value":"4"},{"name":"title","value":"Add comment from 2nd pull request."},{"name":"url","value":"https://github.com/itsdalmo/test-repository/pull/4"},{"name":"head_name","value":"my_second_pull"},{"name":"head_sha","value":"a5114f6ab89f4b736655642a11e8d15ce363d882"},{"name":"base_name","value":"master"},{"name":"base_sha","value":"93eeeedb8a16e6662062d1eca5655108977cc59a"},{"name":"message","value":"Push 2."},{"name":"author","value":"itsdalmo"},{"name":"author_email","value":"kristian@doingit.no"},{"name":"state","value":"OPEN"}]`,
 			expectedCommitCount: 9,
 			expectedCommits:     []string{"Push 2."},
 		},
@@ -321,8 +326,8 @@ func TestGetAndPutE2E(t *testing.T) {
 				IntegrationTool: "checkout",
 			},
 			putParameters:       resource.PutParameters{},
-			versionString:       `{"pr":"4","commit":"a5114f6ab89f4b736655642a11e8d15ce363d882","committed":"0001-01-01T00:00:00Z"}`,
-			metadataString:      `[{"name":"pr","value":"4"},{"name":"title","value":"Add comment from 2nd pull request."},{"name":"url","value":"https://github.com/itsdalmo/test-repository/pull/4"},{"name":"head_name","value":"my_second_pull"},{"name":"head_sha","value":"a5114f6ab89f4b736655642a11e8d15ce363d882"},{"name":"base_name","value":"master"},{"name":"base_sha","value":"93eeeedb8a16e6662062d1eca5655108977cc59a"},{"name":"message","value":"Push 2."},{"name":"author","value":"itsdalmo"},{"name":"author_email","value":"kristian@doingit.no"}]`,
+			versionString:       `{"pr":"4","commit":"a5114f6ab89f4b736655642a11e8d15ce363d882","committed":"0001-01-01T00:00:00Z","approved_review_count":"","state":""}`,
+			metadataString:      `[{"name":"pr","value":"4"},{"name":"title","value":"Add comment from 2nd pull request."},{"name":"url","value":"https://github.com/itsdalmo/test-repository/pull/4"},{"name":"head_name","value":"my_second_pull"},{"name":"head_sha","value":"a5114f6ab89f4b736655642a11e8d15ce363d882"},{"name":"base_name","value":"master"},{"name":"base_sha","value":"93eeeedb8a16e6662062d1eca5655108977cc59a"},{"name":"message","value":"Push 2."},{"name":"author","value":"itsdalmo"},{"name":"author_email","value":"kristian@doingit.no"},{"name":"state","value":"OPEN"}]`,
 			expectedCommitCount: 7,
 			expectedCommits: []string{
 				"Push 2.",
@@ -349,8 +354,8 @@ func TestGetAndPutE2E(t *testing.T) {
 			},
 			getParameters:       resource.GetParameters{},
 			putParameters:       resource.PutParameters{},
-			versionString:       `{"pr":"6","commit":"ac771f3b69cbd63b22bbda553f827ab36150c640","committed":"0001-01-01T00:00:00Z"}`,
-			metadataString:      `[{"name":"pr","value":"6"},{"name":"title","value":"[skip ci] Add a PR with a non-master base"},{"name":"url","value":"https://github.com/itsdalmo/test-repository/pull/6"},{"name":"head_name","value":"test-develop-pr"},{"name":"head_sha","value":"ac771f3b69cbd63b22bbda553f827ab36150c640"},{"name":"base_name","value":"develop"},{"name":"base_sha","value":"93eeeedb8a16e6662062d1eca5655108977cc59a"},{"name":"message","value":"[skip ci] Add a PR with a non-master base"},{"name":"author","value":"itsdalmo"},{"name":"author_email","value":"kristian@doingit.no"}]`,
+			versionString:       `{"pr":"6","commit":"ac771f3b69cbd63b22bbda553f827ab36150c640","committed":"0001-01-01T00:00:00Z","approved_review_count":"","state":""}`,
+			metadataString:      `[{"name":"pr","value":"6"},{"name":"title","value":"[skip ci] Add a PR with a non-master base"},{"name":"url","value":"https://github.com/itsdalmo/test-repository/pull/6"},{"name":"head_name","value":"test-develop-pr"},{"name":"head_sha","value":"ac771f3b69cbd63b22bbda553f827ab36150c640"},{"name":"base_name","value":"develop"},{"name":"base_sha","value":"93eeeedb8a16e6662062d1eca5655108977cc59a"},{"name":"message","value":"[skip ci] Add a PR with a non-master base"},{"name":"author","value":"itsdalmo"},{"name":"author_email","value":"kristian@doingit.no"},{"name":"state","value":"OPEN"}]`,
 			expectedCommitCount: 5,
 			expectedCommits:     []string{"[skip ci] Add a PR with a non-master base"}, // This merge ends up being fast-forwarded
 		},
@@ -370,10 +375,10 @@ func TestGetAndPutE2E(t *testing.T) {
 			},
 			getParameters:       resource.GetParameters{},
 			putParameters:       resource.PutParameters{},
-			versionString:       `{"pr":"4","commit":"a5114f6ab89f4b736655642a11e8d15ce363d882","committed":"0001-01-01T00:00:00Z"}`,
-			metadataString:      `[{"name":"pr","value":"4"},{"name":"title","value":"Add comment from 2nd pull request."},{"name":"url","value":"https://github.com/itsdalmo/test-repository/pull/4"},{"name":"head_name","value":"my_second_pull"},{"name":"head_sha","value":"a5114f6ab89f4b736655642a11e8d15ce363d882"},{"name":"base_name","value":"master"},{"name":"base_sha","value":"93eeeedb8a16e6662062d1eca5655108977cc59a"},{"name":"message","value":"Push 2."},{"name":"author","value":"itsdalmo"},{"name":"author_email","value":"kristian@doingit.no"}]`,
+			versionString:       `{"pr":"4","commit":"a5114f6ab89f4b736655642a11e8d15ce363d882","committed":"0001-01-01T00:00:00Z","approved_review_count":"","state":""}`,
+			metadataString:      `[{"name":"pr","value":"4"},{"name":"title","value":"Add comment from 2nd pull request."},{"name":"url","value":"https://github.com/itsdalmo/test-repository/pull/4"},{"name":"head_name","value":"my_second_pull"},{"name":"head_sha","value":"a5114f6ab89f4b736655642a11e8d15ce363d882"},{"name":"base_name","value":"master"},{"name":"base_sha","value":"93eeeedb8a16e6662062d1eca5655108977cc59a"},{"name":"message","value":"Push 2."},{"name":"author","value":"itsdalmo"},{"name":"author_email","value":"kristian@doingit.no"},{"name":"state","value":"OPEN"}]`,
 			expectedCommitCount: 10,
-			expectedCommits:     []string{"Merge commit 'a5114f6ab89f4b736655642a11e8d15ce363d882'"},
+			expectedCommits:     []string{"Merge commit 'a5114f6ab89f4b736655642a11e8d15ce363d882' into master"},
 		},
 		{
 			description: "get works with git_depth",
@@ -388,11 +393,11 @@ func TestGetAndPutE2E(t *testing.T) {
 			},
 			getParameters:       resource.GetParameters{GitDepth: 6},
 			putParameters:       resource.PutParameters{},
-			versionString:       `{"pr":"4","commit":"a5114f6ab89f4b736655642a11e8d15ce363d882","committed":"0001-01-01T00:00:00Z"}`,
-			metadataString:      `[{"name":"pr","value":"4"},{"name":"title","value":"Add comment from 2nd pull request."},{"name":"url","value":"https://github.com/itsdalmo/test-repository/pull/4"},{"name":"head_name","value":"my_second_pull"},{"name":"head_sha","value":"a5114f6ab89f4b736655642a11e8d15ce363d882"},{"name":"base_name","value":"master"},{"name":"base_sha","value":"93eeeedb8a16e6662062d1eca5655108977cc59a"},{"name":"message","value":"Push 2."},{"name":"author","value":"itsdalmo"},{"name":"author_email","value":"kristian@doingit.no"}]`,
+			versionString:       `{"pr":"4","commit":"a5114f6ab89f4b736655642a11e8d15ce363d882","committed":"0001-01-01T00:00:00Z","approved_review_count":"","state":""}`,
+			metadataString:      `[{"name":"pr","value":"4"},{"name":"title","value":"Add comment from 2nd pull request."},{"name":"url","value":"https://github.com/itsdalmo/test-repository/pull/4"},{"name":"head_name","value":"my_second_pull"},{"name":"head_sha","value":"a5114f6ab89f4b736655642a11e8d15ce363d882"},{"name":"base_name","value":"master"},{"name":"base_sha","value":"93eeeedb8a16e6662062d1eca5655108977cc59a"},{"name":"message","value":"Push 2."},{"name":"author","value":"itsdalmo"},{"name":"author_email","value":"kristian@doingit.no"},{"name":"state","value":"OPEN"}]`,
 			expectedCommitCount: 9,
 			expectedCommits: []string{
-				"Merge commit 'a5114f6ab89f4b736655642a11e8d15ce363d882'",
+				"Merge commit 'a5114f6ab89f4b736655642a11e8d15ce363d882' into master",
 				"Push 2.",
 				"Push 1.",
 				"Add another commit to the 2nd PR to verify concourse behaviour.",
@@ -418,11 +423,11 @@ func TestGetAndPutE2E(t *testing.T) {
 				ListChangedFiles: true,
 			},
 			putParameters:       resource.PutParameters{},
-			versionString:       `{"pr":"4","commit":"a5114f6ab89f4b736655642a11e8d15ce363d882","committed":"0001-01-01T00:00:00Z"}`,
-			metadataString:      `[{"name":"pr","value":"4"},{"name":"title","value":"Add comment from 2nd pull request."},{"name":"url","value":"https://github.com/itsdalmo/test-repository/pull/4"},{"name":"head_name","value":"my_second_pull"},{"name":"head_sha","value":"a5114f6ab89f4b736655642a11e8d15ce363d882"},{"name":"base_name","value":"master"},{"name":"base_sha","value":"93eeeedb8a16e6662062d1eca5655108977cc59a"},{"name":"message","value":"Push 2."},{"name":"author","value":"itsdalmo"},{"name":"author_email","value":"kristian@doingit.no"}]`,
+			versionString:       `{"pr":"4","commit":"a5114f6ab89f4b736655642a11e8d15ce363d882","committed":"0001-01-01T00:00:00Z","approved_review_count":"","state":""}`,
+			metadataString:      `[{"name":"pr","value":"4"},{"name":"title","value":"Add comment from 2nd pull request."},{"name":"url","value":"https://github.com/itsdalmo/test-repository/pull/4"},{"name":"head_name","value":"my_second_pull"},{"name":"head_sha","value":"a5114f6ab89f4b736655642a11e8d15ce363d882"},{"name":"base_name","value":"master"},{"name":"base_sha","value":"93eeeedb8a16e6662062d1eca5655108977cc59a"},{"name":"message","value":"Push 2."},{"name":"author","value":"itsdalmo"},{"name":"author_email","value":"kristian@doingit.no"},{"name":"state","value":"OPEN"}]`,
 			filesString:         "README.md\ntest.txt\n",
 			expectedCommitCount: 10,
-			expectedCommits:     []string{"Merge commit 'a5114f6ab89f4b736655642a11e8d15ce363d882'"},
+			expectedCommits:     []string{"Merge commit 'a5114f6ab89f4b736655642a11e8d15ce363d882' into master"},
 		},
 	}
 
