@@ -277,6 +277,19 @@ func TestCheck(t *testing.T) {
 				resource.NewVersion(testPullRequests[2]),
 			},
 		},
+
+		{
+			description: "check filters out versions from a PR which do not match the base branch filter",
+			source: resource.Source{
+				Repository:    "itsdalmo/test-repository",
+				AccessToken:   "oauthtoken",
+				NotBaseBranch: "pr3",
+			},
+			version:      resource.Version{},
+			pullRequests: testPullRequests,
+			files:        [][]string{},
+			expected:     resource.CheckResponse(nil),
+		},
 	}
 
 	for _, tc := range tests {
@@ -293,6 +306,9 @@ func TestCheck(t *testing.T) {
 						continue
 					}
 					if tc.source.Branch != "" && tc.source.Branch != tc.pullRequests[i].PullRequestObject.HeadRefName {
+						continue
+					}
+					if tc.source.NotBaseBranch != "" && tc.source.NotBaseBranch != tc.pullRequests[i].PullRequestObject.BaseRefName {
 						continue
 					}
 					pullRequests = append(pullRequests, tc.pullRequests[i])
