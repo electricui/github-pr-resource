@@ -1,14 +1,12 @@
 ## Github PR resource
 
-[![Build Status](https://travis-ci.org/telia-oss/github-pr-resource.svg?branch=master)](https://travis-ci.org/telia-oss/github-pr-resource)
-[![Go Report Card](https://goreportcard.com/badge/github.com/telia-oss/github-pr-resource)](https://goreportcard.com/report/github.com/telia-oss/github-pr-resource)
-[![Docker Automated build](https://img.shields.io/docker/automated/teliaoss/github-pr-resource.svg)](https://hub.docker.com/r/teliaoss/github-pr-resource/)
+Based on the [original](https://github.com/telia-oss/github-pr-resource), with additional APIs for filtering based on the head branch name and NOT filtering on base branches. 
 
 [graphql-api]: https://developer.github.com/v4
 [original-resource]: https://github.com/jtarchie/github-pullrequest-resource
 
 A Concourse resource for pull requests on Github. Written in Go and based on the [Github V4 (GraphQL) API][graphql-api].
-Inspired by [the original][original-resource], with some important differences:
+Inspired by [the _original_ original][original-resource], with some important differences:
 
 - Github V4: `check` only requires 1 API call per 100th *open* pull request. (See [#costs](#costs) for more information).
 - Fetch/merge: `get` will always merge a specific commit from the Pull request into the latest base.
@@ -34,6 +32,7 @@ Make sure to check out [#migrating](#migrating) to learn more.
 | `required_review_approvals` | No       | `2`                              | Disable triggering of the resource if the pull request does not have at least `X` approved review(s).                                                                                                                                                                                      |
 | `git_crypt_key`             | No       | `AEdJVENSWVBUS0VZAAAAA...`       | Base64 encoded git-crypt key. Setting this will unlock / decrypt the repository with git-crypt. To get the key simply execute `git-crypt export-key -- - | base64` in an encrypted repository.                                                                                             |
 | `base_branch`               | No       | `master`                         | Name of a branch. The pipeline will only trigger on pull requests against the specified branch.                                                                                                                                                                                            |
+| `not_base_branch`           | No       | `master`                         | Name of a branch. The pipeline will _not_ trigger on pull requests against the specified branch.                                                                                                                                                                                            |
 | `labels`                    | No       | `["bug", "enhancement"]`         | The labels on the PR. The pipeline will only trigger on pull requests having at least one of the specified labels.                                                                                                                                                                         |
 | `disable_git_lfs`           | No       | `true`                           | Disable Git LFS, skipping an attempt to convert pointers of files tracked into their corresponding objects when checked out into a working copy.                                                                                                                                           |
 | `states`                    | No       | `["OPEN", "MERGED"]`             | The PR states to select (`OPEN`, `MERGED` or `CLOSED`). The pipeline will only trigger on pull requests matching one of the specified states. Default is ["OPEN"].                                                                                                                         |

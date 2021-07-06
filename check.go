@@ -44,6 +44,11 @@ Loop:
 			continue
 		}
 
+		// Filter pull request if the NotBaseBranch matches the one specified in source
+		if request.Source.NotBaseBranch != "" && p.PullRequestObject.BaseRefName == request.Source.NotBaseBranch {
+			continue
+		}
+
 		// Filter out commits that are too old.
 		if !p.UpdatedDate().Time.After(request.Version.CommittedDate) {
 			continue
