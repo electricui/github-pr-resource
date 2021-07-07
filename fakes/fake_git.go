@@ -69,7 +69,7 @@ type FakeGit struct {
 	mergeReturnsOnCall map[int]struct {
 		result1 error
 	}
-	PullStub        func(string, string, int, bool, bool) error
+	PullStub        func(string, string, int, bool, bool, bool) error
 	pullMutex       sync.RWMutex
 	pullArgsForCall []struct {
 		arg1 string
@@ -77,6 +77,7 @@ type FakeGit struct {
 		arg3 int
 		arg4 bool
 		arg5 bool
+		arg6 bool
 	}
 	pullReturns struct {
 		result1 error
@@ -420,7 +421,7 @@ func (fake *FakeGit) MergeReturnsOnCall(i int, result1 error) {
 	}{result1}
 }
 
-func (fake *FakeGit) Pull(arg1 string, arg2 string, arg3 int, arg4 bool, arg5 bool) error {
+func (fake *FakeGit) Pull(arg1 string, arg2 string, arg3 int, arg4 bool, arg5 bool, arg6 bool) error {
 	fake.pullMutex.Lock()
 	ret, specificReturn := fake.pullReturnsOnCall[len(fake.pullArgsForCall)]
 	fake.pullArgsForCall = append(fake.pullArgsForCall, struct {
@@ -429,11 +430,12 @@ func (fake *FakeGit) Pull(arg1 string, arg2 string, arg3 int, arg4 bool, arg5 bo
 		arg3 int
 		arg4 bool
 		arg5 bool
-	}{arg1, arg2, arg3, arg4, arg5})
-	fake.recordInvocation("Pull", []interface{}{arg1, arg2, arg3, arg4, arg5})
+		arg6 bool
+	}{arg1, arg2, arg3, arg4, arg5, arg6})
+	fake.recordInvocation("Pull", []interface{}{arg1, arg2, arg3, arg4, arg5, arg6})
 	fake.pullMutex.Unlock()
 	if fake.PullStub != nil {
-		return fake.PullStub(arg1, arg2, arg3, arg4, arg5)
+		return fake.PullStub(arg1, arg2, arg3, arg4, arg5, arg6)
 	}
 	if specificReturn {
 		return ret.result1
@@ -448,17 +450,17 @@ func (fake *FakeGit) PullCallCount() int {
 	return len(fake.pullArgsForCall)
 }
 
-func (fake *FakeGit) PullCalls(stub func(string, string, int, bool, bool) error) {
+func (fake *FakeGit) PullCalls(stub func(string, string, int, bool, bool, bool) error) {
 	fake.pullMutex.Lock()
 	defer fake.pullMutex.Unlock()
 	fake.PullStub = stub
 }
 
-func (fake *FakeGit) PullArgsForCall(i int) (string, string, int, bool, bool) {
+func (fake *FakeGit) PullArgsForCall(i int) (string, string, int, bool, bool, bool) {
 	fake.pullMutex.RLock()
 	defer fake.pullMutex.RUnlock()
 	argsForCall := fake.pullArgsForCall[i]
-	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3, argsForCall.arg4, argsForCall.arg5
+	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3, argsForCall.arg4, argsForCall.arg5, argsForCall.arg6
 }
 
 func (fake *FakeGit) PullReturns(result1 error) {

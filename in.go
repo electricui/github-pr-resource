@@ -24,7 +24,7 @@ func Get(request GetRequest, github Github, git Git, outputDir string) (*GetResp
 	if err := git.Init(pull.BaseRefName); err != nil {
 		return nil, err
 	}
-	if err := git.Pull(pull.Repository.URL, pull.BaseRefName, request.Params.GitDepth, request.Params.Submodules, request.Params.FetchTags); err != nil {
+	if err := git.Pull(pull.Repository.URL, pull.BaseRefName, request.Params.GitDepth, request.Params.Submodules, request.Params.FetchTags, request.Params.AllowUnrelatedHistories); err != nil {
 		return nil, err
 	}
 
@@ -130,12 +130,13 @@ func Get(request GetRequest, github Github, git Git, outputDir string) (*GetResp
 
 // GetParameters ...
 type GetParameters struct {
-	SkipDownload     bool   `json:"skip_download"`
-	IntegrationTool  string `json:"integration_tool"`
-	GitDepth         int    `json:"git_depth"`
-	Submodules       bool   `json:"submodules"`
-	ListChangedFiles bool   `json:"list_changed_files"`
-	FetchTags        bool   `json:"fetch_tags"`
+	SkipDownload            bool   `json:"skip_download"`
+	IntegrationTool         string `json:"integration_tool"`
+	GitDepth                int    `json:"git_depth"`
+	Submodules              bool   `json:"submodules"`
+	ListChangedFiles        bool   `json:"list_changed_files"`
+	FetchTags               bool   `json:"fetch_tags"`
+	AllowUnrelatedHistories bool   `json:"allow_unrelated_histories"`
 }
 
 // GetRequest ...
