@@ -20,7 +20,7 @@ func Check(request CheckRequest, manager Github) (CheckResponse, error) {
 		filterStates = request.Source.States
 	}
 
-	pulls, err := manager.ListPullRequests(filterStates, request.Source.Branch, request.Version.CommittedDate)
+	pulls, err := manager.ListPullRequests(filterStates, request.Source.Branch, request.Source.BaseBranch, request.Version.CommittedDate)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get last commits: %s", err)
 	}
@@ -40,7 +40,14 @@ Loop:
 		}
 
 		// Filter pull request if the BaseBranch does not match the one specified in source
+		// This is already done serverside, but as a prefix search, this validates it.
 		if request.Source.BaseBranch != "" && p.PullRequestObject.BaseRefName != request.Source.BaseBranch {
+			continue
+		}
+
+		// Filter pull request if the Branch does not match the one specified in source.
+		// This is already done serverside, but as a prefix search, this validates it.
+		if request.Source.Branch != "" && p.PullRequestObject.HeadRefName != request.Source.Branch {
 			continue
 		}
 

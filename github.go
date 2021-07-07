@@ -21,7 +21,7 @@ import (
 // Github for testing purposes.
 //go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 -o fakes/fake_github.go . Github
 type Github interface {
-	ListPullRequests([]githubv4.PullRequestState, string, time.Time) ([]*PullRequest, error)
+	ListPullRequests([]githubv4.PullRequestState, string, string, time.Time) ([]*PullRequest, error)
 	ListModifiedFiles(int) ([]string, error)
 	PostComment(string, string) error
 	GetPullRequest(string, string) (*PullRequest, error)
@@ -99,7 +99,7 @@ func NewGithubClient(s *Source) (*GithubClient, error) {
 }
 
 // ListPullRequests gets the last commit on all pull requests with the matching state.
-func (m *GithubClient) ListPullRequests(prStates []githubv4.PullRequestState, prHeadRefName string, since time.Time) ([]*PullRequest, error) {
+func (m *GithubClient) ListPullRequests(prStates []githubv4.PullRequestState, prHeadRefName string, prBaseRefName string, since time.Time) ([]*PullRequest, error) {
 	var prSearch struct {
 		Search struct {
 			Edges []struct {
@@ -133,7 +133,7 @@ func (m *GithubClient) ListPullRequests(prStates []githubv4.PullRequestState, pr
 				EndCursor   githubv4.String
 				HasNextPage bool
 			}
-		} `graphql:"search(query:$query,type:ISSUE,last:$prFirst,after:$prCursor,headRefName:$prHeadRefName)"`
+		} `graphql:"search(query:$query,type:ISSUE,last:$prFirst,after:$prCursor)"`
 	}
 
 	query := fmt.Sprintf("is:pr repo:%s/%s", m.Owner, m.Repository)
@@ -146,18 +146,21 @@ func (m *GithubClient) ListPullRequests(prStates []githubv4.PullRequestState, pr
 		query += fmt.Sprintf(" updated:>=%s", since.Format(time.RFC3339))
 	}
 
+	if prHeadRefName != "" {
+		query += fmt.Sprintf(" head:%s", prHeadRefName)
+	}
+
+	if prBaseRefName != "" {
+		query += fmt.Sprintf(" base:%s", prBaseRefName)
+	}
+
 	vars := map[string]interface{}{
 		"prFirst":        githubv4.Int(100),
 		"prCursor":       (*githubv4.String)(nil),
-		"prHeadRefName":  (*githubv4.String)(nil),
 		"prReviewStates": []githubv4.PullRequestReviewState{githubv4.PullRequestReviewStateApproved},
 		"commitsLast":    githubv4.Int(1),
 		"labelsFirst":    githubv4.Int(100),
 		"query":          githubv4.String(query),
-	}
-
-	if len(prHeadRefName) > 0 {
-		vars["prHeadRefName"] = githubv4.String(prHeadRefName)
 	}
 
 	var response []*PullRequest

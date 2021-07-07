@@ -1,6 +1,6 @@
 ## Github PR resource
 
-Based on the [original](https://github.com/telia-oss/github-pr-resource), with additional APIs for filtering based on the head branch name and NOT filtering on base branches. 
+Based on the [original](https://github.com/telia-oss/github-pr-resource), with additional APIs for filtering based on the head branch name and NOT filtering on base branches. Some queries have been moved to the github server side so less processing has to happen on the client.
 
 [graphql-api]: https://developer.github.com/v4
 [original-resource]: https://github.com/jtarchie/github-pullrequest-resource
