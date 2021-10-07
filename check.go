@@ -45,6 +45,11 @@ Loop:
 			continue
 		}
 
+		// If the PR Number does not match, continue
+		if request.Source.PrNumber != 0 && request.Source.PrNumber != p.Number {
+			continue
+		}
+
 		// Filter pull request if the Branch does not match the one specified in source.
 		// This is already done serverside, but as a prefix search, this validates it.
 		if request.Source.Branch != "" && p.PullRequestObject.HeadRefName != request.Source.Branch {
