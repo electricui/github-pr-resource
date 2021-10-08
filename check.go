@@ -2,12 +2,12 @@ package resource
 
 import (
 	"fmt"
+	"log"
 	"path/filepath"
 	"regexp"
 	"sort"
+	"strconv"
 	"strings"
-
-	"github.com/shurcooL/githubv4"
 )
 
 // Check (business logic)
@@ -15,7 +15,7 @@ func Check(request CheckRequest, manager Github) (CheckResponse, error) {
 	var response CheckResponse
 
 	// Filter out pull request if it does not have a filtered state
-	filterStates := []githubv4.PullRequestState{githubv4.PullRequestStateOpen}
+	filterStates := []string{"OPEN"}
 	if len(request.Source.States) > 0 {
 		filterStates = request.Source.States
 	}
@@ -45,8 +45,10 @@ Loop:
 			continue
 		}
 
+		log.Printf("Checking pull PrNumber: %s against requested %s\n", strconv.Itoa(p.Number), request.Source.PrNumber)
+
 		// If the PR Number does not match, continue
-		if request.Source.PrNumber != 0 && request.Source.PrNumber != p.Number {
+		if request.Source.PrNumber != "" && request.Source.PrNumber != strconv.Itoa(p.Number) {
 			continue
 		}
 

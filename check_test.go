@@ -247,7 +247,7 @@ func TestCheck(t *testing.T) {
 			source: resource.Source{
 				Repository:  "itsdalmo/test-repository",
 				AccessToken: "oauthtoken",
-				States:      []githubv4.PullRequestState{githubv4.PullRequestStateClosed},
+				States:      []string{"CLOSED"},
 			},
 			version:      resource.Version{},
 			pullRequests: testPullRequests,
@@ -262,7 +262,7 @@ func TestCheck(t *testing.T) {
 			source: resource.Source{
 				Repository:  "itsdalmo/test-repository",
 				AccessToken: "oauthtoken",
-				States:      []githubv4.PullRequestState{githubv4.PullRequestStateOpen},
+				States:      []string{"OPEN"},
 			},
 			version:      resource.Version{},
 			pullRequests: testPullRequests[9:11],
@@ -275,7 +275,7 @@ func TestCheck(t *testing.T) {
 			source: resource.Source{
 				Repository:  "itsdalmo/test-repository",
 				AccessToken: "oauthtoken",
-				States:      []githubv4.PullRequestState{githubv4.PullRequestStateClosed, githubv4.PullRequestStateMerged},
+				States:      []string{"CLOSED", "MERGED"},
 			},
 			version:      resource.NewVersion(testPullRequests[11]),
 			pullRequests: testPullRequests,
@@ -319,13 +319,13 @@ func TestCheck(t *testing.T) {
 		t.Run(tc.description, func(t *testing.T) {
 			github := new(fakes.FakeGithub)
 			pullRequests := []*resource.PullRequest{}
-			filterStates := []githubv4.PullRequestState{githubv4.PullRequestStateOpen}
+			filterStates := []string{"OPEN"}
 			if len(tc.source.States) > 0 {
 				filterStates = tc.source.States
 			}
 			for i := range tc.pullRequests {
 				for j := range filterStates {
-					if filterStates[j] != tc.pullRequests[i].PullRequestObject.State {
+					if filterStates[j] != string(tc.pullRequests[i].PullRequestObject.State) {
 						continue
 					}
 					if tc.source.Branch != "" && tc.source.Branch != tc.pullRequests[i].PullRequestObject.HeadRefName {

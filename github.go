@@ -21,7 +21,7 @@ import (
 // Github for testing purposes.
 //go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 -o fakes/fake_github.go . Github
 type Github interface {
-	ListPullRequests([]githubv4.PullRequestState, string, string, time.Time) ([]*PullRequest, error)
+	ListPullRequests([]string, string, string, time.Time) ([]*PullRequest, error)
 	ListModifiedFiles(int) ([]string, error)
 	PostComment(string, string) error
 	GetPullRequest(string, string) (*PullRequest, error)
@@ -99,7 +99,7 @@ func NewGithubClient(s *Source) (*GithubClient, error) {
 }
 
 // ListPullRequests gets the last commit on all pull requests with the matching state.
-func (m *GithubClient) ListPullRequests(prStates []githubv4.PullRequestState, prHeadRefName string, prBaseRefName string, since time.Time) ([]*PullRequest, error) {
+func (m *GithubClient) ListPullRequests(prStates []string, prHeadRefName string, prBaseRefName string, since time.Time) ([]*PullRequest, error) {
 	var prSearch struct {
 		Search struct {
 			Edges []struct {

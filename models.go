@@ -11,25 +11,25 @@ import (
 
 // Source represents the configuration for the resource.
 type Source struct {
-	Repository              string                      `json:"repository"`
-	AccessToken             string                      `json:"access_token"`
-	V3Endpoint              string                      `json:"v3_endpoint"`
-	V4Endpoint              string                      `json:"v4_endpoint"`
-	Paths                   []string                    `json:"paths"`
-	IgnorePaths             []string                    `json:"ignore_paths"`
-	DisableCISkip           bool                        `json:"disable_ci_skip"`
-	DisableGitLFS           bool                        `json:"disable_git_lfs"`
-	SkipSSLVerification     bool                        `json:"skip_ssl_verification"`
-	DisableForks            bool                        `json:"disable_forks"`
-	IgnoreDrafts            bool                        `json:"ignore_drafts"`
-	GitCryptKey             string                      `json:"git_crypt_key"`
-	BaseBranch              string                      `json:"base_branch"`
-	NotBaseBranch           string                      `json:"not_base_branch"`
-	PrNumber                int                         `json:"pr_number"`
-	RequiredReviewApprovals int                         `json:"required_review_approvals"`
-	Labels                  []string                    `json:"labels"`
-	States                  []githubv4.PullRequestState `json:"states"`
-	Branch                  string                      `json:"branch"`
+	Repository              string   `json:"repository"`
+	AccessToken             string   `json:"access_token"`
+	V3Endpoint              string   `json:"v3_endpoint"`
+	V4Endpoint              string   `json:"v4_endpoint"`
+	Paths                   []string `json:"paths"`
+	IgnorePaths             []string `json:"ignore_paths"`
+	DisableCISkip           bool     `json:"disable_ci_skip"`
+	DisableGitLFS           bool     `json:"disable_git_lfs"`
+	SkipSSLVerification     bool     `json:"skip_ssl_verification"`
+	DisableForks            bool     `json:"disable_forks"`
+	IgnoreDrafts            bool     `json:"ignore_drafts"`
+	GitCryptKey             string   `json:"git_crypt_key"`
+	BaseBranch              string   `json:"base_branch"`
+	NotBaseBranch           string   `json:"not_base_branch"`
+	PrNumber                string   `json:"pr_number"`
+	RequiredReviewApprovals int      `json:"required_review_approvals"`
+	Labels                  []string `json:"labels"`
+	States                  []string `json:"states"` // The GitHub generated types are incorrect for the is: operator
+	Branch                  string   `json:"branch"`
 }
 
 // Validate the source configuration.
@@ -48,11 +48,12 @@ func (s *Source) Validate() error {
 	}
 	for _, state := range s.States {
 		switch state {
-		case githubv4.PullRequestStateOpen:
-		case githubv4.PullRequestStateClosed:
-		case githubv4.PullRequestStateMerged:
+		case "OPEN":
+		case "CLOSED":
+		case "MERGED":
+		case "UNMERGED":
 		default:
-			return errors.New(fmt.Sprintf("states value \"%s\" must be one of: OPEN, MERGED, CLOSED", state))
+			return errors.New(fmt.Sprintf("states value \"%s\" must be one of: OPEN, CLOSED, MERGED, UNMERGED", state))
 		}
 	}
 	return nil
