@@ -139,7 +139,7 @@ func (m *GithubClient) ListPullRequests(prStates []githubv4.PullRequestState, pr
 	query := fmt.Sprintf("is:pr repo:%s/%s", m.Owner, m.Repository)
 
 	for _, state := range prStates {
-		query += strings.ToLower(fmt.Sprintf(" state:%s", state))
+		query += strings.ToLower(fmt.Sprintf(" is:%s", state))
 	}
 
 	if !since.IsZero() {
